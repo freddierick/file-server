@@ -1,0 +1,34 @@
+{
+    "folder":"bi-folder",
+    "generalFile":"bi-file-earmark",
+    "specifics":[
+        {
+            "extensions":[".mp4",".mov"],
+            "icon": "bi-file-earmark-play"
+        },
+        {
+            "extensions":[".png",".jpg",".webp",".jfif"],
+            "icon": "bi-file-earmark-image"
+        },
+        {
+            "extensions":[".mp3",".wav"],
+            "icon": "bi-file-earmark-music"
+        },
+        {
+            "extensions":[".zip"],
+            "icon": "bi-file-earmark-zip"
+        },
+        {
+            "extensions":[".txt"],
+            "icon": "bi-file-earmark-text"
+        },
+        {
+            "extensions":[".js",".py",".php",".ts",".c",".cc",".go",".java"],
+            "icon": "bi-file-earmark-code"
+        },
+        {
+            "extensions":[".pdf"],
+            "icon": "bi-file-earmark-richtext"
+        }
+    ]
+}

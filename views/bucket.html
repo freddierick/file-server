@@ -1,0 +1,217 @@
+<html>
+    <head>
+        <title><%=path%> - FileStore</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+
+
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <style>
+            table, th, td {
+                border: 1px solid black;
+            }
+            .flex-container {
+                display: flex;
+                }
+
+            .flex-container-part {
+                background-color: #f1f1f1;
+                margin: 10px;
+                padding: 20px;
+                /* font-size: 30px; */
+            }
+            .mainPage {
+			    padding: 20px;
+		    }
+            body{
+                background-color: gray;
+            }
+        </style>
+    </head>
+    <body>
+        <%- include('./blocks/header.html', { user, mainConfig }) %>
+        <div class="mainPage">
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <% let toDisplayPath = path.split("/"); let currentPath = [] %>
+
+
+                    <% toDisplayPath.forEach( (e,i) => { %>
+                      <% currentPath.push(e) %>
+
+                      <% let temp = currentPath.join('/'); %>
+                      <% while (temp.includes(" ")) temp = temp.replace(" ","%X98") %>
+                        <li class="breadcrumb-item" <%= (i==(toDisplayPath.length-1)) ? `aria-current="page"` : `` %> ><a <%= (i==(toDisplayPath.length-1)) ? `` : `href=${bucketID}?p=${temp}` %>> <%=e%> </a></li>
+                        <% }) %>
+                </ol>
+              </nav>
+
+
+              <div id="accordion">
+                <div class="card">
+                  <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                      <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        Upload New Files
+                      </button>
+                    </h5>
+                  </div>
+              
+                  <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                    <div class="card-body">
+                        <form enctype="multipart/form-data">
+                            <div>
+                                <label>Upload:</label>
+                                <input type="file" name="file1" id="file1" onchange="uploadFile()" required multiple />
+                                
+                            </div>
+                            <div>            
+                              <br>
+                                <progress id="progressBar" value="0" max="100" style="width:300px;"></progress>
+                                <h3 id="status"></h3>
+                                <p id="loaded_n_total"></p>
+                                <button onclick="ajax.abort()" >Cancel</button>
+                                <!-- <input type="submit" name="btn_upload_profile_pic" value="Upload" /> -->
+                            </div>
+                        </form>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header" id="headingTwo">
+                    <h5 class="mb-0">
+                      <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        Create New directory
+                      </button>
+                    </h5>
+                  </div>
+                  <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                    <div class="card-body">
+                        <form method="GET" action="../bucket">
+                            <label>Create a new directory:</label>
+                            <input type="text" name="name" placeholder="Dir name" />
+                            <input type="hidden" name="id" value="<%= bucketID %>" />
+                            <input type="hidden" name="path" value="<%= path +(path=='/' ? '' : '/') %>" />
+                            <input type="hidden" name="createDir" value="" />
+                            <input type="submit" name="submit" value="Create" />
+                        </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            
+            <hr>
+            <a href="?p=/"><button>Home</button></a>
+            <a href="?p=<%= back %>"><button>Back a directory</button></a>
+            
+            <hr>
+            <table style="width: 100%;">
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Action</th>
+                    <th>Delete</th>
+                </tr>
+                <% if (!files.children[0]){%>
+                    <p>Oops you don't have any data in this file!</p>
+                <% } else {%>
+
+                    <% files.children.map(e=>{ %>
+                        <tr>
+                    <th style="font-size: 40px;" ><i class="bi <%= e.image %>"></i></th>
+
+                            <th><%= e.name %></th>
+                            <th><%= e.size %></th>
+                            <th><%= e.type %></th>
+                            <th><a href="<%= e.type == 'directory' ? '?p='+ path + (path=='/' ? '' : '/') +e.name : './download/'+bucketID+''+path + (path=='/' ? '' : '/') +e.name %>" target="<%= e.type == 'directory' ? '' : '_blank' %>" </a><button><%= e.type == 'directory' ? "Open" : "Download" %></button></a></th>
+                            <th><button onclick="deliteItem('<%=path%><%=e.name%>')">Delete</button></th>
+                            <!-- <th><%= JSON.stringify(e) %></th> -->
+                        </tr>
+                    <% }) %>
+
+                <%}%>
+            </table>
+            <script>
+              let ajax;
+
+                window.addEventListener('load', (event) => {
+                    const params = (new URL(document.location)).searchParams;
+                    const path = params.get("p");
+                });
+                async function deliteItem(path){
+                  await fetch(`../api/files?path=${path}&bucket=<%=bucketID%>`, {
+                      method: 'DELETE'
+                  });
+                    location.reload();
+                };
+                function _(el) {
+                      return document.getElementById(el);
+                    }
+                    function bitsToSize(bits){
+                      let size;
+                      if (!(bits > 1000)){
+                          size = Math.floor(bits) + " B";
+                      } else if (!(bits / 1024 > 1000)){
+                          size = Math.floor(bits / 1024) + " KB";
+                      } else if (!(bits / 1024 / 1024 > 1000)){
+                          size = Math.floor(bits / 1024 / 1024) + " MB";
+                      } else if (!(bits / 1024 / 1024 / 1024 > 1000)){
+                          size = Math.floor(bits / 1024 / 1024 / 1024) + " GB";
+                      };
+                      return size;
+                    }
+                    function uploadFile() {
+                      var files = _("file1").files;
+                      console.log(files.length)
+                      // var file = _("file1").files[0];
+
+                      // alert(file.name+" | "+file.size+" | "+file.type);
+                      var formdata = new FormData();
+
+                      // formdata.append("file", file);
+                      for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        formdata.append("file", file);
+                      }
+
+                      ajax = new XMLHttpRequest();
+                      ajax.upload.addEventListener("progress", progressHandler, false);
+                      ajax.addEventListener("load", completeHandler, false);
+                      ajax.addEventListener("error", errorHandler, false);
+                      ajax.addEventListener("abort", abortHandler, false);
+                      ajax.open("POST", "<%= myUrl%>/api/files/upload/?path=<%= path +(path=='/' ? '' : '/') %>&bucket=<%=bucketID%>&key=<%= token%>");
+                      //use file_upload_parser.php from above url
+                      ajax.send(formdata);
+                    }
+
+                    function progressHandler(event) {
+                      _("loaded_n_total").innerHTML = "Uploaded " + bitsToSize(event.loaded) + " of " + bitsToSize(event.total);
+                      var percent = (event.loaded / event.total) * 100;
+                      _("progressBar").value = Math.round(percent);
+                      _("status").innerHTML = Math.round(percent) + "% uploaded... please wait";
+                    }
+
+                    function completeHandler(event) {
+                      location.reload();
+                    }
+
+                    function errorHandler(event) {
+                      _("status").innerHTML = "Upload Failed";
+                    }
+
+                    function abortHandler(event) {
+                      _("status").innerHTML = "Upload Aborted";
+                    }
+                
+                </script>
+            </div>
+    </body>

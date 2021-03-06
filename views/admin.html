@@ -1,0 +1,241 @@
+<html>
+    <head>
+        <title>Admin - <%= mainConfig.panel.name%></title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <style>
+            table, th, td {
+                border: 1px solid black;
+            }
+            table {
+                border-collapse: collapse;
+                border-spacing: 0;
+                width: 100%;
+                border: 1px solid #ddd;
+            }
+            .flex-container {
+                display: flex;
+                }
+
+            .flex-container-part {
+                background-color: #f1f1f1;
+                margin: 10px;
+                padding: 20px;
+                /* font-size: 30px; */
+            }
+            .mainPage {
+			    padding: 20px;
+                margin: auto;
+                margin-top: 20px;
+                width: 60%;
+                border: 3px ;
+                background-color: white;
+                border-radius: 2%;
+                padding: 10px;
+		    }
+            body{
+                background-color: gray;
+            }
+            .status-online{
+                color: rgb(20, 243, 20);
+            }
+            .status-offline{
+                color: rgb(243, 20, 20);
+            }
+            .status-loading{
+                color: rgb(146, 146, 146);
+            }
+            @media screen and (max-width: 800px) {
+            .mainPage {
+                width: 99%;
+            }
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <%- include('./blocks/header.html', { user, mainConfig }) %>
+
+          <div class="mainPage" style="text-align: center;">
+        <h1 >Panel and Node Management Console</h1>
+        <p >Welcome to the Management Console here you can change settings, add/remove/create nodes and users.</p>
+            <h2>Node Management: </h2>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg" >Manage Nodes</button>
+             <br><br>
+            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    
+                    <div class="modal-content" style="padding: 10px;">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="exampleModalLongTitle" style="text-align: center;" >Nodes</h1>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+    
+                        <div style="text-align: center;">
+                            <% if(query.nodeS){ %>
+                                <div class="alert alert-success" role="alert">
+                                    <%= query.nodeS%>
+                                  </div>
+                            <% }else if(query.nodeE) { %>
+                                <div class="alert alert-danger" role="alert">
+                                    <%= query.nodeE%>
+                                  </div>
+                            <% }; %>
+                            <h3>Panel Nodes</h3>
+                            <p>Nodes allow you to save data across multiple server all though this panel and API.</p>
+                            <p>You can find the files required to create a node at <a href="https://github.com/freddierick/file-store-node">github.com/freddierick/file-store-node</a></p>
+                            <h6>The latest node version is: <%= mainConfig.panel.versionNumber%></h6>
+                            <div style="overflow-x: auto;">
+                                <table style="text-align: center;" id="dsa">
+                                    <tr> 
+                                        <th></th>
+                                        <th>Status</th>
+                                        <th>Version</th>
+                                        <th>Name</th>
+                                        <th>URL</th>
+                                        <th>Create New Buckets?</th>
+                                        <th>Update</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                        <tr id="node-main"> 
+                                            <th>Default Node</th>
+                                            <th><i class="bi bi-record-circle-fill status-online"></i> </th>
+                                            <th><%= mainConfig.panel.versionNumber%></th>
+                                            <th>Main</th>
+                                            <th><%= mainConfig.panel.bace_url%></th>
+                                            <th> <input type="checkbox" name="createNewBucket" checked></input> </th>
+                                            <th> <button onclick="node('update','main')">Update</button> </th>
+                                            <th></th>
+                                        </tr>
+                                        <% nodes.map(e=>{%>
+                                            <tr id="node-<%= e.UID %>">
+                                                <th>UID: <%= e.UID %></th>
+                                                <th><i id="status-<%= e.UID %>" class="bi bi-record-circle-fill status-loading"></i> </th>
+                                                <th id="version-<%= e.UID %>" >0.0.0 </th>
+                                                <th> <input type="name" name="name" value="<%= e.name %>"></input> </th>
+                                                <th> <input type="name" name="URL" value="<%= e.URL %>"></input> </th>
+                                                <th> <input type="checkbox" name="createNewBucket" <%= (e.newBuckets==0 ? '' : 'checked') %>></input> </th>
+                                                <th> <button onclick="node('update','<%= e.UID %>')">Update</button></th>
+                                                <th> <button onclick="node('delete','<%= e.UID %>')">Delete</button></th>
+                                            </tr>
+                                        <% }) %>
+                                    <hr>
+                                    <tr id="node-new">
+                                        <th>Create New Node</th>
+                                        <th></th>
+                                        <th></th>
+                                        <th> <input type="name" name="name" placeholder="name"></input> </th>
+                                        <th> <input type="name" name="URL"  placeholder="URL"></input> </th>
+                                        <th>  </th>
+                                        <th> <button onclick="node('create','new')">Create</button></th>
+                                        <th></th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+            <h2>Panel</h2>
+            <div class="info" style="float:left; padding-left: 20%;">
+                <h3>Info:</h3>
+
+                <p>Panel version: <%= mainConfig.panel.versionNumber%></p>
+                <p>Latests Panel version: <%= mainConfig.panel.versionNumber%></p>
+                <p>Users: <%= users.length%></p>
+                <p>Admins: <%= users.filter(user=> user.admin==1).length%></p>
+                <p>Buckets: <%= buckets.length%></p>
+            </div>  
+            <div class="info" style="float:right; padding-right: 20%;" >
+                <h3>Settings:</h3>
+                <form action="admin/settings">
+                    <h5>Change Panel Name</h5>
+                    <input type="name" name="name" value="<%= mainConfig.panel.name%>" required>
+                    <input type="hidden" name="create" required>
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+   
+            <h3>Users</h3>
+            <table>
+            <% users.map(e=>{%>
+                <tr id="node-<%= e.UID %>">
+                    <th>UID: <%= e.UID %></th>
+                    <th>username: <%= e.username %></th>
+                    <th>email: <%= e.email %></th>
+                    <th>admin: <%= e.admin %></th>
+
+                </tr>
+            <% }) %>
+        </table>
+            
+            </div>
+    </body>
+    <script> 
+    async function node(command, node){
+        console.log(command, node)
+        const data = document.getElementById(`node-${node}`);
+            const newData = [];
+            for (let i = 0; i < data.childNodes.length; i++) {
+                const e = data.childNodes[i];
+                if (e.childNodes[1]) {console.log(e.childNodes[1].checked);newData.push(e.childNodes[1].checked || e.childNodes[1].value);}
+            };
+        if (command == "create"){
+            let res = await fetch(`admin/node?create=&&url=${newData[1]}&name=${newData[0]}`);
+            res = await res.json();
+            // console.log(res)
+            if ( res.error ) {window.location.href = `admin?nodeE=${res.error}#nodes`;} 
+            else {window.location.href = `admin?nodeS=Successfully created new node ${newData[0]}#nodes`};         
+
+        } else if (command == "delete"){
+            let res = await fetch(`admin/node?delete=&node=${node}`);
+            window.location.href = "admin#nodes";
+            location.reload();
+        } else if (command == "update"){
+            console.log(newData)
+            let res = await fetch(`admin/node?update=&node=${node}&url=${newData[2]}&name=${newData[1]}&newData=${newData[3]}`);
+            // window.location.href = "admin#nodes";
+            // location.reload();
+        };
+    };
+        async function updateNodeStatus(){
+            nodeStatus = await fetch(`/nodeStatus`).catch(data=> console.log);
+            console.log(nodeStatus)
+            nodeStatus = await nodeStatus.json();
+            console.log(nodeStatus)
+            nodeStatus.forEach(node  => {
+                nodeElement = document.getElementById(`status-${node.UID}`);
+                nodeVersion = document.getElementById(`version-${node.UID}`);
+
+                if (nodeElement){
+                    nodeElement.classList = node.online ? "bi bi-record-circle-fill status-online" : "bi bi-record-circle-fill status-offline";
+                    nodeVersion.innerHTML = node.versionNumber;
+                }
+
+            });
+        };
+        $(document).ready(function() {
+            if (window.location.hash == "#nodes") $('.bd-example-modal-lg').modal('show');
+            updateNodeStatus()
+            setInterval(updateNodeStatus, 5000);
+            $('.checkbox').click(async function() {
+                let userConfirm = confirm(`Are you sure you want to make this bucket ${this.checked  ? 'public (anyone with the link can view any and all of your files!)': 'private' }?`);
+                if (!userConfirm) return this.checked = !this.checked
+                fetch(`/bucket?id=${this.id.replace("public-","")}&public=`).then(data=> console.log);
+            });
+        });
+        
+    </script>
+</html>

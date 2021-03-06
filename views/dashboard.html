@@ -1,0 +1,201 @@
+<html>
+    <head>
+        <title>Dashboard - <%= mainConfig.panel.name%></title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <style>
+            table, th, td {
+                border: 1px solid black;
+            }
+            .flex-container {
+                display: flex;
+                }
+
+            .flex-container-part {
+                background-color: #f1f1f1;
+                margin: 10px;
+                padding: 20px;
+                /* font-size: 30px; */
+            }
+            .mainPage {
+			    padding: 20px;
+		    }
+            body{
+                background-color: gray;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <%- include('./blocks/header.html', { user, mainConfig }) %>
+
+          <div class="mainPage">
+            <h6>Welcome back <%=user.username%>! </h6>
+            <% if(query.s){ %>
+                <div class="alert alert-success" role="alert">
+                    <%= query.s%>
+                  </div>
+            <% }else if(query.e) { %>
+                <div class="alert alert-danger" role="alert">
+                    <%= query.e%>
+                  </div>
+            <% }; %>
+            <h2>Api Key Management</h2>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg" >Manage</button> <br><br>
+            <h1>Buckets</h1>
+
+            
+
+
+            <h3>Create A New Bucket</h3>
+            <form action="bucket">
+                <input type="name" name="name" placeholder="name" required>
+                <label for="node">Choose a node:</label>
+                <select id="node" name="node">
+                    <option value="main">Main</option>
+                    <% availableNodes.forEach( e => {%>
+                        <option value="<%= e.UID%>"><%= e.name%></option>
+                    <%  }) %>
+                </select>
+                <input type="hidden" name="create" required>
+                <input type="submit" value="Submit">
+            </form>
+            <h3>Your Buckets:</h3>
+            <div style="overflow-x: auto;">
+
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Open Files</th>
+                        <th>Public?</th>
+                        <th>Node</th>
+                        <th>Delete</th>
+                        <th>Subdomain</th>
+                        <th>Change</th>
+                    </tr>
+                    <% if (!buckets[0]){%>
+                        <p>Oops you don't have any storage buckets!</p>
+                    <% } else {%>
+
+                        <% buckets.map(e=>{ %>
+                            <tr>
+                                <th><%= e.name %></th>
+                                <th><a href="./bucket/<%= e.UID %>"><button>Open</button></a></th>
+                                <th><input type="checkbox" class="checkbox" id="public-<%=e.UID%>" <%= (e.public==0 ? '' : 'checked') %> </th>
+                                <th><%= (nodes.filter(t=> t.UID == e.nodeID)[0] || {name:"Main"}).name %></th>
+                                <th><a href="./bucket?id=<%= e.UID %>&delete="><button>Delete</button></a></th>
+                                <th>[subdomain].freddie.host</th>
+                                <th><button>Change</button></th>
+                            </tr>
+                        <% }) %>
+
+                    <%}%>
+                </table>
+                </div>
+            <br />
+            
+
+            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                
+                <div class="modal-content" style="padding: 10px;">
+                    <div class="modal-header">
+                        <h1 class="modal-title" id="exampleModalLongTitle" style="text-align: center;" >API keys</h1>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <div class="flex-container">
+                            <div class="flex-container-part center" style="text-align: center;">
+                                <h3>Create A New API key</h3> 
+                                <form action="api/key">
+                                    <input type="text" name="name" placeholder="name" required> <br> <br>
+                                    <input type="text" name="permissions" placeholder="permissions" required> <br> 
+                                    <input type="hidden" name="create" required> <br>
+                                    <input type="submit" value="Submit">
+                                </form>
+                            </div>
+
+                            <div class="flex-container-part center" style="text-align: center;"> 
+                                <h3>API key permissions</h3>
+                                <p>Permissions seem quite complex but are actually simple</p>
+                                <table style="border:  solid black; width: 50;" class="center">
+                                    <tr>
+                                        <th>Permission level</th>
+                                        <th>Buckets</th>
+                                        <th>Files</th>
+                                    </tr>
+                                    <tr>
+                                        <th>None</th>
+                                        <th>0</th>
+                                        <th>0</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Read</th>
+                                        <th>1</th>
+                                        <th>1</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Read/Write</th>
+                                        <th>2</th>
+                                        <th>2</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Read/Write/Delete</th>
+                                        <th>3</th>
+                                        <th>3</th>
+                                    </tr>
+                                </table>
+                                <p>So '33' is all Permission and '10' is read buckets and no file access</p>
+                            </div>
+                        </div>
+                    </div>
+                        <h3>Your API keys:</h3>
+                    <div style="overflow-x: auto;">
+
+                        <table >
+                            <tr>
+                                <th>Name</th>
+                                <th>KEY</th>
+                                <th>Permissions</th>
+                                <th>Delete</th>
+                            </tr>
+                            <% if (!apiKeys[0]){%>
+                                <p>Oops you don't have any API keys!</p>
+                            <% } else {%>
+                                <% apiKeys.map(e=>{ %>
+                                    <tr>
+                                        <th><%= e.name %></th>
+                                        <th><%= e.key %></th>
+                                        <th><%= e.permissions %></th>
+                                        <th><a href="./api/key?id=<%= e.UID %>&delete="><button>Delete</button></a></th>
+                                    </tr>
+                                <% }) %>
+                            <%}%>
+                        </table>
+                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </body>
+    <script> 
+        $(document).ready(function() {
+            if (window.location.hash == "#API") $('.bd-example-modal-lg').modal('show');
+            $('.checkbox').click(async function() {
+                let userConfirm = confirm(`Are you sure you want to make this bucket ${this.checked  ? 'public (anyone with the link can view any and all of your files!)': 'private' }?`);
+                if (!userConfirm) return this.checked = !this.checked
+                fetch(`/bucket?id=${this.id.replace("public-","")}&public=`).then(data=> console.log);
+            });
+            });
+    </script>
+</html>

@@ -1,23 +1,23 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href=".."><%= mainConfig.panel.name%></a>
+    <a class="navbar-brand" href=".." id="panelNameHeader" ><%= mainConfig.panel.name%></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
       
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link" href="htttps://freddiewren.com">Developed by freddie</a>
+        <a class="nav-item nav-link" href="https://freddiewren.com">Developed by freddie</a>
       </div>
       
     </div>
     <% if (user) { %>
       <% if (user.admin == 1){ %>
-        <a class="navbar-brand" href="admin"> <i class="bi bi-gear"></i> Admin</a>
+        <a class="navbar-brand" href="/admin"> <i class="bi bi-gear"></i> Admin</a>
       <%}%>
     <span class="navbar-text">
         <a class="nav-item nav-link" href="#"> Logged in as: <%=user.username%> <span class="sr-only">(current)</span> </a>
       </span>
-      <a class="nav-item nav-link" href="logout">Logout </a>
+      <a class="nav-item nav-link" href="/logout">Logout </a>
       <%}%>
     
   </nav>

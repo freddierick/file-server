@@ -60,9 +60,21 @@ app.get("/node", async ( req,res ) => {
 });
 
 app.get("/settings", async ( req,res ) => {
-    mainConfig.panel.name = req.query.name;
+    if (req.query.name){
+        mainConfig.panel.name = req.query.name;
+    } else if (req.query.allowNewAccounts){
+        mainConfig.allow_new_users = req.query.allowNewAccounts == 'true';
+    } else if (req.query.panelURL) {
+        mainConfig.panel.bace_url = req.query.panelURL ;
+    } else if (req.query.createNewBuckets) {
+        mainConfig.built_in_node.allowNewBuckets = req.query.createNewBuckets == 'true' ? 1 : 0;
+        console.log(mainConfig)
+        fs.writeFile('config.json', JSON.stringify(mainConfig), e => console.log);
+        return res.redirect('../../admin#nodes')
+    }
     fs.writeFile('config.json', JSON.stringify(mainConfig), e => console.log);
     res.redirect('../../admin')
+
 });
 
 module.exports = { app };
